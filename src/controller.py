@@ -1,46 +1,62 @@
 from src.classes.user import User
-from src.config.db import conndb  
-from src.helpers.mail import sendMail
+from src.config.db import conndb
+from src.helpers.mail import mail_service
 
 from dotenv import load_dotenv
 
 load_dotenv()
 
 
-conn = conndb()
-
-
 def Home():
     return {"message": "API service running"}
 
+
 def joinWaitlist(user: User):
+    conn = conndb()
+    if not conn:
+        return {"error": "Database connection failed"}
+
     try:
-        with conn.cursor() as db: 
-            
-            db.execute("SELECT * FROM users WHERE email = %s", (user.email,))
-            rows = db.fetchall()
-            if rows:
+        with conn.cursor() as db:
+            db.execute("SELECT 1 FROM users WHERE email = %s", (user.email,))
+            if db.fetchone():
                 return {"error": "This email has already joined the waitlist"}
+
             db.execute(
                 "INSERT INTO users (email, fullname) VALUES (%s, %s)",
                 (user.email, user.fullname)
             )
-            conn.commit()
-            sendMail(user.email)
+
+        conn.commit()
+        mail_service.send_mail(user.email)
+
         return {"message": f"Successfully Joined Waitlist {user.fullname}"}
+
     except Exception as e:
-        print(e)
+        conn.rollback()
         return {"error": f"An error occurred: {e}"}
+
+    finally:
+        conn.close()
 
 
 def getWaiters():
+    conn = conndb()
+    if not conn:
+        return {"error": "Database connection failed"}
+
     try:
         with conn.cursor() as db:
-            db.execute("SELECT * FROM users")
+            db.execute("SELECT email, fullname FROM users")
             rows = db.fetchall()
-            if rows:
-                return {"users": rows}
-            else:
-                return {"error": "No Users Joined Yet"}
+
+        if not rows:
+            return {"error": "No Users Joined Yet"}
+
+        return {"users": rows}
+
     except Exception as e:
-        print(f"errro occured: {e}")
+        return {"error": f"An error occurred: {e}"}
+
+    finally:
+        conn.close()
