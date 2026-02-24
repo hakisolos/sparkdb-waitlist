@@ -10,7 +10,6 @@ load_dotenv()
 conn = conndb()
 
 
-
 def Home():
     return {"message": "API service running"}
 
@@ -32,3 +31,16 @@ def joinWaitlist(user: User):
     except Exception as e:
         print(e)
         return {"error": f"An error occurred: {e}"}
+
+
+def getWaiters():
+    try:
+        with conn.cursor() as db:
+            db.execute("SELECT * FROM users")
+            rows = db.fetchall()
+            if rows:
+                return {"users": rows}
+            else:
+                return {"error": "No Users Joined Yet"}
+    except Exception as e:
+        print(f"errro occured: {e}")
