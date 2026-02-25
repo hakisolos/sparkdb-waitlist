@@ -260,7 +260,7 @@ export default function WaitlistPage() {
                 </button>
 
                 <p className="text-xs text-neutral-600 text-center">
-                  No spam. Unsubscribe any time.
+                  No spam.
                 </p>
               </form>
             )}
