@@ -105,7 +105,7 @@ export default function WaitlistPage() {
     setLoading(true);
     setStatus('idle');
     try {
-      const res = await fetch('http://localhost:8000/waitlist/join', {
+      const res = await fetch('https://sparkdb-waitlist-backend.onrender.com/waitlist/join', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ fullname: fullName, email }),
